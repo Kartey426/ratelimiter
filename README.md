@@ -29,7 +29,4 @@ results/         loadtest output (json/csv) + the numbers that go in this README
 4. Compare `results/*.json`, paste the summary table + chart here.
 
 ## Status
-
-Skeleton only — see TODOs in each file. Build order suggested:
-`internal/limiter` (+ Lua) → `internal/middleware` → `cmd/gateway` →
-`cmd/loadtest` → `deploy/`.
+Building
