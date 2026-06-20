@@ -1,0 +1,11 @@
+-- token_bucket.lua
+-- KEYS[1] = bucket key for this client
+-- ARGV[1] = bucket capacity
+-- ARGV[2] = refill rate (tokens/sec)
+-- ARGV[3] = now (unix ms)
+-- ARGV[4] = tokens requested (usually 1)
+--
+-- Runs atomically in Redis: read last refill time + token count, compute
+-- how many tokens have accrued since, clamp to capacity, then attempt to
+-- consume. Returns {allowed (0/1), remaining, retry_after_ms}.
+-- TODO: implement

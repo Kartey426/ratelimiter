@@ -1,0 +1,51 @@
+# deploy/docker-compose.yml
+#
+# Brings up: redis, gateway-1 (:8081), gateway-2 (:8082) -- two instances
+# sharing one Redis. Hitting both from the load tester / curl proves the
+# limit is enforced globally, not per-instance.
+#
+# Run from repo root:
+#   docker compose -f deploy/docker-compose.yml up --build
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+  gateway-1:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      PORT: "8081"
+      REDIS_ADDR: "redis:6379"
+      ALGORITHM: "sliding_window"
+      LIMIT: "10"
+      WINDOW_SECONDS: "60"
+    ports:
+      - "8081:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  gateway-2:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      PORT: "8082"
+      REDIS_ADDR: "redis:6379"
+      ALGORITHM: "sliding_window"
+      LIMIT: "10"
+      WINDOW_SECONDS: "60"
+    ports:
+      - "8082:8082"
+    depends_on:
+      redis:
+        condition: service_healthy

@@ -1,0 +1,26 @@
+# Build artifacts
+gateway
+*.exe
+/out/
+
+# Load test output (see README -- results/ is for generated reports)
+/results/*.json
+/results/*.csv
+!/results/.gitkeep
+
+# Debug/scratch files from manual testing
+*.log
+_verification/
+debug_args.lua
+
+# Env files (if you ever add real secrets locally)
+.env
+.env.local
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+RATELIMITER_PROBLEM_STATEMENT.md
