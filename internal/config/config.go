@@ -87,3 +87,10 @@ func getEnvFloat(key string, fallback float64) (float64, error) {
 	}
 	return f, nil
 }
+
+func (c Config) LimitForHeader() int {
+	if c.Algorithm == "token_bucket" {
+		return int(c.Capacity)
+	}
+	return c.Limit
+}

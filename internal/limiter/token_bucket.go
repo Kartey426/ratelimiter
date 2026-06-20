@@ -24,15 +24,15 @@ type TokenBucketConfig struct{
 	KeyPrefix string
 }
 
-type TockenBucket struct{
+type TokenBucket struct{
 	rdb redis.Cmdable
-	script redis.Script
+	script *redis.Script
 	cfg TokenBucketConfig
 }
 
 func NewTokenBucket(rdb redis.Cmdable, cfg TokenBucketConfig) *TokenBucket{
 	if cfg.KeyPrefix==""{
-		cgf.KeyPrefix="tb"
+		cfg.KeyPrefix="tb"
 	}
 	if cfg.TTL<=0{
 		// Comfortably longer than a full empty->full refill cycle.
@@ -46,7 +46,7 @@ func NewTokenBucket(rdb redis.Cmdable, cfg TokenBucketConfig) *TokenBucket{
 	}
 }
 
-func (tb *TokenBucket) Allow(ctx context.Context, clientId string) (Decision, error){
+func (tb *TokenBucket) Allow(ctx context.Context, clientID string) (Decision, error){
 	key := fmt.Sprintf("%s:{%s}", tb.cfg.KeyPrefix, clientID)
 	nowMs := time.Now().UnixMilli()
 

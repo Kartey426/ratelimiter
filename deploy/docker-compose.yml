@@ -1,8 +1,10 @@
 # deploy/docker-compose.yml
 #
-# Brings up: redis, gateway-1 (:8081), gateway-2 (:8082) -- two instances
-# sharing one Redis. Hitting both from the load tester / curl proves the
-# limit is enforced globally, not per-instance.
+# Brings up: redis, two sliding-window gateways (:8081, :8082), and two
+# token-bucket gateways (:8083, :8084) -- all sharing one Redis. Hitting
+# both instances of the same algorithm proves the limit is enforced
+# globally, not per-instance; running both algorithms side by side lets
+# the load tester diff their burst/smoothing behavior with real numbers.
 #
 # Run from repo root:
 #   docker compose -f deploy/docker-compose.yml up --build
@@ -18,7 +20,7 @@ services:
       timeout: 2s
       retries: 10
 
-  gateway-1:
+  sliding-window-1:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
@@ -34,7 +36,7 @@ services:
       redis:
         condition: service_healthy
 
-  gateway-2:
+  sliding-window-2:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
@@ -46,6 +48,38 @@ services:
       WINDOW_SECONDS: "60"
     ports:
       - "8082:8082"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  token-bucket-1:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      PORT: "8083"
+      REDIS_ADDR: "redis:6379"
+      ALGORITHM: "token_bucket"
+      CAPACITY: "10"
+      REFILL_RATE: "1.0"
+    ports:
+      - "8083:8083"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  token-bucket-2:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    environment:
+      PORT: "8084"
+      REDIS_ADDR: "redis:6379"
+      ALGORITHM: "token_bucket"
+      CAPACITY: "10"
+      REFILL_RATE: "1.0"
+    ports:
+      - "8084:8084"
     depends_on:
       redis:
         condition: service_healthy
