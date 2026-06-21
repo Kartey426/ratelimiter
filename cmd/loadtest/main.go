@@ -93,7 +93,17 @@ func runLoadTest(cfg loadTestConfig) []requestResult {
 		wg      sync.WaitGroup
 	)
 
-	httpClient := &http.Client{Timeout: 5 * time.Second}
+	// httpClient := &http.Client{Timeout: 5 * time.Second}
+	transport := &http.Transport{
+		MaxIdleConns:        500,
+		MaxIdleConnsPerHost: 500,
+		MaxConnsPerHost:     0, // 0 = no limit; let the OS/transport throttle naturally
+		IdleConnTimeout:     90 * time.Second,
+	}
+	httpClient := &http.Client{
+		Timeout:   5 * time.Second,
+		Transport: transport,
+	}
 	deadline := time.Now().Add(cfg.duration)
 
 	var targetCounter uint64 // round-robins across targets across all goroutines
